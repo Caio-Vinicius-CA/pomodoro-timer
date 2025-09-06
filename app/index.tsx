@@ -1,9 +1,14 @@
 // imports de funcionalidade
 import React, { useEffect, useMemo, useRef, useState } from "react";
 // imports de estilização e modelos
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 // import tailwindcss
 import "./global.css";
+// import images
+const startImg = require("../assets/images/startImg.png");
+const pauseImg = require("../assets/images/pauseImg.png");
+const nextImg = require("../assets/images/nextImg.png");
+const previousImg = require("../assets/images/previousImg.png");
 
 type Mode = "focus" | "short" | "long";
 
@@ -88,6 +93,23 @@ export default function Index() {
     setTimeLeft(DURATIONS[mode]);
   };
 
+  // Função para avançar para o próximo modo manualmente
+  const goToNextMode = () => {
+    if (mode === "focus") {
+      // se estou no foco → decido se a próxima pausa é longa ou curta
+      const nextMode: Mode =
+        (completedPomodoros + 1) % LONG_BREAK_EVERY === 0 ? "long" : "short";
+
+      // conta esse pomodoro como concluído
+      setCompletedPomodoros((c) => c + 1);
+
+      switchMode(nextMode, false);
+    } else {
+      // se estou em qualquer pausa → volto para foco
+      switchMode("focus", false);
+    }
+  };
+
   // Permite mudar ao usuário modo
   const onManualModeChange = (m: Mode) => {
     switchMode(m, false);
@@ -142,27 +164,37 @@ export default function Index() {
 
         {/* View para botões */}
         <View style={styles.buttons}>
-          {isRunning ? (
-            <TouchableOpacity
-              style={[styles.button, styles.pause]}
-              onPress={onPause}
-            >
-              <Text style={styles.buttonText}>Pausar</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={[styles.button, styles.start]}
-              onPress={onStart}
-            >
-              <Text style={styles.buttonText}>Iniciar</Text>
-            </TouchableOpacity>
-          )}
-
+          {/* Botão de reset mode */}
           <TouchableOpacity
             style={[styles.button, styles.reset]}
             onPress={onReset}
           >
-            <Text style={styles.buttonText}>Resetar</Text>
+            <Image source={previousImg} style={{ width: 30, height: 30 }} />
+          </TouchableOpacity>
+          {isRunning ? (
+            // Botão de pause
+            <TouchableOpacity
+              style={[styles.button, styles.pause]}
+              onPress={onPause}
+            >
+              <Image source={pauseImg} style={{ width: 30, height: 30 }} />
+            </TouchableOpacity>
+          ) : (
+            // Botão de play
+            <TouchableOpacity
+              style={[styles.button, styles.start]}
+              onPress={onStart}
+            >
+              <Image source={startImg} style={{ width: 30, height: 30 }} />
+            </TouchableOpacity>
+          )}
+
+          {/* Botão de avançar modo */}
+          <TouchableOpacity
+            style={[styles.button, styles.reset]}
+            onPress={goToNextMode}
+          >
+            <Image source={nextImg} style={{ width: 30, height: 30 }} />
           </TouchableOpacity>
         </View>
       </View>
@@ -200,7 +232,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderRadius: 10,
     overflow: "hidden",
-    borderWidth:0,
+    borderWidth: 0,
     borderColor: "#fff",
   },
   tab: {
